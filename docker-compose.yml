@@ -20,6 +20,9 @@ services:
     image: postgres:13
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./db/migrations:/docker-entrypoint-initdb.d/migrations
+      - ./db/seeds:/docker-entrypoint-initdb.d/seeds
+      - ./db/init.sh:/docker-entrypoint-initdb.d/init.sh
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
