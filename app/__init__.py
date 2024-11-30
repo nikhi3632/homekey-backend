@@ -13,4 +13,7 @@ def create_app():
     from app.routes import main_bp
     app.register_blueprint(main_bp)
 
+    # Import models to ensure they are registered with SQLAlchemy
+    from app import models
+
     return app
