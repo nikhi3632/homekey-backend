@@ -3,3 +3,10 @@ Flask-SQLAlchemy==3.1.1
 psycopg2-binary==2.9.7
 SQLAlchemy==2.0.20
 Werkzeug==2.3.7
+flask-cors
+flask-migrate
+flask-bcrypt
+stripe
+python-dotenv
+boto3
+requests

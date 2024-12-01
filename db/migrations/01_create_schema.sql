@@ -13,6 +13,7 @@ CREATE TABLE Users (
     email VARCHAR(100) UNIQUE,
     password_hash TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    task_progress JSONB DEFAULT '{}'::jsonb
 );
 
 -- Create Roles table
