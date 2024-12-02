@@ -1,3 +1,21 @@
+-- -- Seed Roles
+-- INSERT INTO Roles (role_name) VALUES
+--     ('Seller'),
+--     ('Buyer'),
+--     ('FSH');
+
+-- -- Seed Users (passwords are 'password123' hashed)
+-- INSERT INTO Users (name, email, password_hash) VALUES
+--     ('John Seller', 'seller@example.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFyGQllxW2H3kxW'),
+--     ('Jane Buyer', 'buyer@example.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFyGQllxW2H3kxW'),
+--     ('FSH Agent', 'fsh@example.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFyGQllxW2H3kxW');
+
+-- -- Assign Roles to Users
+-- INSERT INTO UserRoles (user_id, role_id) VALUES
+--     (1, 1), -- John is a Seller
+--     (2, 2), -- Jane is a Buyer
+--     (3, 3); -- FSH Agent is FSH
+
 -- Seed Roles
 INSERT INTO Roles (role_name) VALUES
     ('Seller'),
@@ -5,16 +23,10 @@ INSERT INTO Roles (role_name) VALUES
     ('FSH');
 
 -- Seed Users (passwords are 'password123' hashed)
-INSERT INTO Users (name, email, password_hash) VALUES
-    ('John Seller', 'seller@example.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFyGQllxW2H3kxW'),
-    ('Jane Buyer', 'buyer@example.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFyGQllxW2H3kxW'),
-    ('FSH Agent', 'fsh@example.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFyGQllxW2H3kxW');
-
--- Assign Roles to Users
-INSERT INTO UserRoles (user_id, role_id) VALUES
-    (1, 1), -- John is a Seller
-    (2, 2), -- Jane is a Buyer
-    (3, 3); -- FSH Agent is FSH
+INSERT INTO Users (name, email, password_hash, role_id) VALUES
+    ('John Seller', 'seller@example.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFyGQllxW2H3kxW', 1),  -- Seller role (role_id = 1)
+    ('Jane Buyer', 'buyer@example.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFyGQllxW2H3kxW', 2),   -- Buyer role (role_id = 2)
+    ('FSH Agent', 'fsh@example.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewFyGQllxW2H3kxW', 3);    -- FSH role (role_id = 3)
 
 -- Seed Listings
 INSERT INTO Listings (seller_id, title, price, description, address, status, photos) VALUES

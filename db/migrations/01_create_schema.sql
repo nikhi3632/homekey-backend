@@ -1,5 +1,4 @@
 -- Create custom ENUM types
-CREATE TYPE role_type AS ENUM ('Seller', 'Buyer', 'FSH');
 CREATE TYPE listing_status AS ENUM ('Available', 'In Escrow', 'Sold');
 CREATE TYPE offer_status AS ENUM ('Pending', 'Accepted', 'Rejected');
 CREATE TYPE document_type AS ENUM ('Disclosure', 'Contract', 'Inspection Report');
@@ -12,22 +11,24 @@ CREATE TABLE Users (
     name VARCHAR(100),
     email VARCHAR(100) UNIQUE,
     password_hash TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    task_progress JSONB DEFAULT '{}'::jsonb
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    task_progress JSONB DEFAULT '{}'::jsonb,
+    role_id INT NOT NULL,                -- Foreign key to the Roles table (One role per user)
+    FOREIGN KEY (role_id) REFERENCES Roles(id) ON DELETE CASCADE  -- Ensures referential integrity
 );
 
--- Create Roles table
+-- Roles table
 CREATE TABLE Roles (
-    id SERIAL PRIMARY KEY,
-    role_name role_type
+    id SERIAL PRIMARY KEY,              -- Auto-incremented ID
+    role_name VARCHAR(50) UNIQUE NOT NULL -- Unique role name (e.g., "Buyer", "Seller")
 );
 
--- Create UserRoles table
-CREATE TABLE UserRoles (
-    user_id INT REFERENCES Users(id) ON DELETE CASCADE,
-    role_id INT REFERENCES Roles(id) ON DELETE CASCADE,
-    PRIMARY KEY (user_id, role_id)
-);
+-- -- Create UserRoles table
+-- CREATE TABLE UserRoles (
+--     user_id INT REFERENCES Users(id) ON DELETE CASCADE,
+--     role_id INT REFERENCES Roles(id) ON DELETE CASCADE,
+--     PRIMARY KEY (user_id, role_id)
+-- );
 
 -- Create Listings table
 CREATE TABLE Listings (

@@ -25,20 +25,21 @@ homekey-backend/
 
 1. Build and start the containers:
 ```bash
-docker-compose up --build
+docker compose up --build -d
+docker compose up
 ```
 
 2. The application will be available at:
-- API: http://localhost:5000
-- PostgreSQL: localhost:5432
+- API: http://localhost:5001
+- PostgreSQL: http://localhost:5432
 
 ### Development
 
 To stop the application:
 ```bash
-docker-compose down
+docker compose down
 ```
 
 To view logs:
 ```bash
-docker-compose logs
+docker compose logs
