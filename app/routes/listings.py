@@ -164,6 +164,8 @@ def create_listing():
 def get_all_listings():
     """
     Fetch all listings for Buyers and FSH agents.
+    - Buyers can only see listings with 'Approved' status.
+    - FSH agents can see all listings.
     """
     user_id = request.args.get('user_id')
 
@@ -174,10 +176,14 @@ def get_all_listings():
 
     # Ensure the user is either a Buyer or FSH agent
     if user.role.role_name not in ['Buyer', 'FSH']:
-        return jsonify({'error': 'Only Buyers or FSH agents can view all listings'}), 403
+        return jsonify({'error': 'Only Buyers or FSH agents can view listings'}), 403
 
-    # Fetch all listings (no filtering by seller_id)
-    listings = Listing.query.all()
+    # If the user is a Buyer, filter listings with 'Approved' status
+    if user.role.role_name == 'Buyer':
+        listings = Listing.query.filter_by(status='Approved').all()
+    else:
+        # If the user is FSH agent, fetch all listings (no filter by status)
+        listings = Listing.query.all()
 
     # Prepare response data
     listings_data = [
@@ -302,3 +308,80 @@ def update_listing():
     db.session.commit()
 
     return jsonify({'message': 'Listing updated successfully', 'listing_id': listing.id}), 200
+
+@bp.route('/get_pending_listings', methods=['GET'])
+@login_required
+def get_pending_listings():
+    """
+    Fetch all listings with 'Pending Approval' status for FSH agent review.
+    """
+    user_id = request.args.get('user_id')
+
+    # Fetch the FSH agent
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    # Ensure the user is an FSH agent
+    if user.role.role_name != 'FSH':
+        return jsonify({'error': 'Only FSH agents can view pending listings'}), 403
+
+    # Fetch all pending listings (no filtering by seller_id)
+    pending_listings = Listing.query.filter_by(status='Pending Approval').all()
+
+    # Prepare response data
+    listings_data = [
+        {
+            'id': listing.id,
+            'title': listing.title,
+            'price': listing.price,
+            'description': listing.description,
+            'address': listing.address,
+            'seller_id': listing.seller_id,
+            'created_at': listing.created_at
+        }
+        for listing in pending_listings
+    ]
+
+    return jsonify(listings_data), 200
+
+@bp.route('/approve_listing', methods=['POST'])
+@login_required
+def approve_listing():
+    """
+    Approve a listing and update FSH agent's task progress.
+    """
+    data = request.get_json()
+    user_id = data.get('user_id')  # FSH agent's user ID
+    listing_id = data.get('listing_id')
+
+    if not user_id or not listing_id:
+        return jsonify({'error': 'user_id and listing_id are required'}), 400
+
+    # Fetch FSH agent and listing
+    fsh_agent = User.query.get(user_id)
+    listing = Listing.query.get(listing_id)
+
+    if not fsh_agent or not listing:
+        return jsonify({'error': 'User or listing not found'}), 404
+
+    # Ensure the user is an FSH agent
+    if fsh_agent.role.role_name != 'FSH':
+        return jsonify({'error': 'Only FSH agents can approve listings'}), 403
+
+    # Ensure the listing is still pending approval
+    if listing.status != 'Pending Approval':
+        return jsonify({'error': 'Listing is not pending approval'}), 400
+
+    # Approve the listing
+    listing.status = 'Approved'
+
+    # Update FSH agent's task progress
+    task_progress = fsh_agent.task_progress.get('FSH', {})
+    task_progress['approve_listing_in_fsh'] = True
+    fsh_agent.task_progress['FSH'] = task_progress
+
+    # Save changes to the database
+    db.session.commit()
+
+    return jsonify({'message': 'Listing approved successfully', 'listing_id': listing.id}), 200
