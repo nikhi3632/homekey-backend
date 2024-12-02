@@ -43,3 +43,9 @@ docker compose down
 To view logs:
 ```bash
 docker compose logs
+```
+
+To interact with postgresql:
+```bash
+docker exec -it <postgres_container_id> psql -U postgres homekey
+```

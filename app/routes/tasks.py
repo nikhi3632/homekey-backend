@@ -1,7 +1,7 @@
 
 #TODO: verify
 
-TASK_SEQUENCE = {
+TASK_SEQUENCES = {
     'Seller': [
         'notify_fsh_intent_to_sell',
         'prepare_home_for_listing',

@@ -10,3 +10,4 @@ stripe
 python-dotenv
 boto3
 requests
+Flask-Session
