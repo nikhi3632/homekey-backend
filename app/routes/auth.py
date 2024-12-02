@@ -1,54 +1,55 @@
 from flask import Blueprint, request, jsonify, session
-from app.models import db, User, Role, UserRoles
+from app.models import db, User, Role
 from utils import login_required
+from sqlalchemy import exc
 
 auth_bp = Blueprint('auth', __name__)
 
 '''
 During registration, a user will provide only one role (Buyer, Seller, or FSH).
 The email must be unique for each user. If the same person wants to register with a different role, they must provide a different email.
-A user can have multiple roles, but they will be differentiated by the email (i.e., each role requires a separate registration with a unique email).
-A session will store only one role at a time, which will be active during the session.
+A user can have only one role at a time, and this role will be stored in the session.
 '''
 
-# Register route (with one role per user)
 @auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
 
-    # Extract data
     name = data.get('name')
     email = data.get('email')
     password = data.get('password')
-    role_name = data.get('role')  # Only one role here, e.g., "buyer", "seller", "fsh"
+    role_name = data.get('role')
 
+    # Validate input data
     if not name or not email or not password or not role_name:
         return jsonify({'error': 'Name, email, password, and role are required'}), 400
 
-    # Check if the email already exists
+    # Check if email already exists in the database
     existing_user = User.query.filter_by(email=email).first()
     if existing_user:
         return jsonify({'error': 'Email already exists'}), 400
 
-    # Check if the role exists
+    # Fetch the role from the database
     role = Role.query.filter_by(role_name=role_name).first()
     if not role:
-        return jsonify({'error': f"Role '{role_name}' does not exist"}), 400
+        return jsonify({'error': f"Role '{role_name}' not found"}), 400
 
-    # Create new user and hash the password
+    # Create a new User instance and hash the password
     new_user = User(name=name, email=email)
     new_user.hash_password(password)
+    new_user.role = role  # Assign the single role to the user
 
-    # Add the user to the database
-    db.session.add(new_user)
-    db.session.commit()
+    # Initialize task progress based on the assigned role
+    new_user.task_progress = new_user.initialize_task_progress(role)
 
-    # Assign the role to the user
-    user_role = UserRoles(user_id=new_user.id, role_id=role.id)
-    db.session.add(user_role)
-    db.session.commit()
-
-    return jsonify({'message': 'User created successfully'}), 201
+    # Add the new user to the database
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({'message': 'User created successfully'}), 201
+    except exc.SQLAlchemyError as e:
+        db.session.rollback()  # Rollback in case of error
+        return jsonify({'error': str(e)}), 500
 
 # Login route
 @auth_bp.route('/login', methods=['POST'])
@@ -57,37 +58,34 @@ def login():
 
     email = data.get('email')
     password = data.get('password')
-    role_name = data.get('role')  # The role the user wants to log in with
 
-    if not email or not password or not role_name:
-        return jsonify({'error': 'Email, password, and role are required'}), 400
+    if not email or not password:
+        return jsonify({'error': 'Email and password are required'}), 400
 
     # Fetch user by email
     user = User.query.filter_by(email=email).first()
-    if user and user.check_password_hash(password):
-        # Check if the user has the requested role
-        role = Role.query.filter_by(role_name=role_name).first()
-        if not role:
-            return jsonify({'error': f'Role {role_name} does not exist'}), 400
 
-        # Ensure the user has the requested role
-        user_role = UserRoles.query.filter_by(user_id=user.id, role_id=role.id).first()
-        if not user_role:
-            return jsonify({'error': f'User does not have the {role_name} role'}), 400
-
-        # Store user ID and role in the session
-        session['user_id'] = user.id
-        session['role'] = role_name
-
-        return jsonify({'message': 'Login successful', 'user_id': user.id, 'role': role_name}), 200
-    else:
+    # If user does not exist or password doesn't match
+    if not user or not user.check_password_hash(password):
         return jsonify({'error': 'Invalid credentials'}), 401
+
+    # Get the user's role
+    user_role = user.role.role_name
+
+    # Retrieve the user's task progress for their role
+    task_progress = user.task_progress.get(user_role, {})
+
+    # Return the user data (e.g., user ID, role, and task progress)
+    return jsonify({
+        'user_id': user.id,
+        'role': user_role,
+        'task_progress': task_progress
+    }), 200
 
 # Logout Route
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
     session.pop('user_id', None)
-    session.pop('user_name', None)
     return jsonify({'message': 'Logged out successfully'}), 200
 
 @auth_bp.route('/protected_route', methods=['GET'])
