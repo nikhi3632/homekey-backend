@@ -75,6 +75,10 @@ def login():
     # Retrieve the user's task progress for their role
     task_progress = user.task_progress.get(user_role, {})
 
+    # Store role in the session
+    session['user_id'] = user.id
+    session['role'] = user_role
+
     # Return the user data (e.g., user ID, role, and task progress)
     return jsonify({
         'user_id': user.id,
@@ -86,6 +90,7 @@ def login():
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
     session.pop('user_id', None)
+    session.pop('role', None)     # Remove role from session
     return jsonify({'message': 'Logged out successfully'}), 200
 
 @auth_bp.route('/protected_route', methods=['GET'])
