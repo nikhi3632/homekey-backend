@@ -1,2 +1,5 @@
 .DS_Store
 app/.DS_Store
+__pycache__
+app/routes/__pycache__
+app/__pycache__
