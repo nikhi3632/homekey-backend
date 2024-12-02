@@ -48,3 +48,46 @@ class User(db.Model):
             task_progress[role.role_name] = {task: False for task in TASK_SEQUENCES[role.role_name]}
         return task_progress
 
+class Listing(db.Model):
+    __tablename__ = 'listings'
+    
+    id = db.Column(db.Integer, primary_key=True)  # Unique ID for the listing
+    seller_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))  # Foreign key to the Users table
+    title = db.Column(db.String(255), nullable=False)  # Title of the listing
+    price = db.Column(db.Numeric(10, 2), nullable=False)  # Price of the property
+    description = db.Column(db.Text)  # Description of the property
+    address = db.Column(db.Text)  # Address of the property
+    status = db.Column(db.String(50), default='Pending Approval')  # Status of the listing
+    created_at = db.Column(db.DateTime, default=datetime.now(datetime.timezone.utc))  # Timestamp when the listing was created
+    
+    seller = db.relationship('User', backref='listings', lazy=True)  # Relationship to User (Seller)
+    documents = db.relationship('Document', backref='listing', lazy=True)  # Relationship to Documents
+
+    def __init__(self, seller_id, title, price, description, address, status='Pending Approval'):
+        self.seller_id = seller_id
+        self.title = title
+        self.price = price
+        self.description = description
+        self.address = address
+        self.status = status
+
+class Document(db.Model):
+    __tablename__ = 'documents'
+    
+    id = db.Column(db.Integer, primary_key=True)  # Unique ID for the document
+    listing_id = db.Column(db.Integer, db.ForeignKey('listings.id', ondelete='CASCADE'))  # Foreign key to Listings table
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))  # Foreign key to Users table
+    document_type = db.Column(db.String(50), nullable=False)  # Type of document (e.g., Notification, Photo)
+    file_name = db.Column(db.String(255), nullable=False)  # Original file name
+    file_data = db.Column(db.LargeBinary, nullable=False)  # Binary data of the file
+    uploaded_at = db.Column(db.DateTime, default=datetime.now(datetime.timezone.utc))  # Timestamp for when the document was uploaded
+    
+    listing = db.relationship('Listing', backref='documents', lazy=True)  # Relationship to Listing
+    uploader = db.relationship('User', backref='uploaded_documents', lazy=True)  # Relationship to User (Uploader)
+
+    def __init__(self, listing_id, uploaded_by, document_type, file_name, file_data):
+        self.listing_id = listing_id
+        self.uploaded_by = uploaded_by
+        self.document_type = document_type
+        self.file_name = file_name
+        self.file_data = file_data

@@ -1,9 +1,9 @@
 -- Create custom ENUM types
-CREATE TYPE listing_status AS ENUM ('Available', 'In Escrow', 'Sold');
-CREATE TYPE offer_status AS ENUM ('Pending', 'Accepted', 'Rejected');
-CREATE TYPE document_type AS ENUM ('Disclosure', 'Contract', 'Inspection Report');
-CREATE TYPE escrow_status AS ENUM ('Open', 'Closed');
-CREATE TYPE payment_status AS ENUM ('Pending', 'Succeeded', 'Failed', 'Cancelled');
+-- CREATE TYPE listing_status AS ENUM ('Available', 'In Escrow', 'Sold');
+-- CREATE TYPE offer_status AS ENUM ('Pending', 'Accepted', 'Rejected');
+-- CREATE TYPE document_type AS ENUM ('Disclosure', 'Contract', 'Inspection Report');
+-- CREATE TYPE escrow_status AS ENUM ('Open', 'Closed');
+-- CREATE TYPE payment_status AS ENUM ('Pending', 'Succeeded', 'Failed', 'Cancelled');
 
 -- Create Users table
 CREATE TABLE Users (
@@ -30,17 +30,15 @@ CREATE TABLE Roles (
 --     PRIMARY KEY (user_id, role_id)
 -- );
 
--- Create Listings table
 CREATE TABLE Listings (
-    id SERIAL PRIMARY KEY,
-    seller_id INT REFERENCES Users(id) ON DELETE SET NULL,
-    title VARCHAR(255),
-    price NUMERIC(10, 2),
-    description TEXT,
-    address TEXT,
-    status listing_status DEFAULT 'Available',
-    photos JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id SERIAL PRIMARY KEY,                     -- Unique ID for the listing
+    seller_id INT REFERENCES Users(id) ON DELETE SET NULL,  -- Reference to the seller's user ID
+    title VARCHAR(255) NOT NULL,              -- Title of the listing
+    price NUMERIC(10, 2) NOT NULL,            -- Price of the property
+    description TEXT,                         -- Description of the property
+    address TEXT,                             -- Address of the property
+    status VARCHAR(50) DEFAULT 'Pending Approval', -- Status of the listing (Pending Approval, Approved, etc.)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Timestamp when the listing was created
 );
 
 -- Create Offers table
@@ -53,31 +51,31 @@ CREATE TABLE Offers (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create Documents table
 CREATE TABLE Documents (
-    id SERIAL PRIMARY KEY,
-    listing_id INT REFERENCES Listings(id) ON DELETE CASCADE,
-    uploaded_by INT REFERENCES Users(id) ON DELETE SET NULL,
-    document_type document_type,
-    file_url TEXT,
-    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id SERIAL PRIMARY KEY,                     -- Unique ID for the document
+    listing_id INT REFERENCES Listings(id) ON DELETE CASCADE, -- Reference to the related listing
+    uploaded_by INT REFERENCES Users(id) ON DELETE SET NULL, -- User who uploaded the document
+    document_type VARCHAR(50) NOT NULL,        -- Type of document (e.g., Notification, Disclosure, Photo)
+    file_name VARCHAR(255) NOT NULL,           -- Original file name
+    file_data BYTEA NOT NULL,                  -- Binary data of the file
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Timestamp for upload
 );
 
--- Create Escrow table
-CREATE TABLE Escrow (
-    id SERIAL PRIMARY KEY,
-    listing_id INT REFERENCES Listings(id) ON DELETE CASCADE,
-    buyer_id INT REFERENCES Users(id) ON DELETE SET NULL,
-    fsh_id INT REFERENCES Users(id) ON DELETE SET NULL,
-    status escrow_status DEFAULT 'Open',
-    deposit_amount NUMERIC(10, 2),
-    stripe_payment_intent_id VARCHAR(255),
-    stripe_payment_status payment_status DEFAULT 'Pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- -- Create Escrow table
+-- CREATE TABLE Escrow (
+--     id SERIAL PRIMARY KEY,
+--     listing_id INT REFERENCES Listings(id) ON DELETE CASCADE,
+--     buyer_id INT REFERENCES Users(id) ON DELETE SET NULL,
+--     fsh_id INT REFERENCES Users(id) ON DELETE SET NULL,
+--     status escrow_status DEFAULT 'Open',
+--     deposit_amount NUMERIC(10, 2),
+--     stripe_payment_intent_id VARCHAR(255),
+--     stripe_payment_status payment_status DEFAULT 'Pending',
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
 
 -- Create indexes for better query performance
 CREATE INDEX idx_user_email ON Users(email);
 CREATE INDEX idx_listing_status ON Listings(status);
-CREATE INDEX idx_offer_status ON Offers(status);
-CREATE INDEX idx_escrow_status ON Escrow(status);
+-- CREATE INDEX idx_offer_status ON Offers(status);
+-- CREATE INDEX idx_escrow_status ON Escrow(status);
