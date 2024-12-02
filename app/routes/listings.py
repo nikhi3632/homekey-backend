@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.models import db, User, Listing, Document 
 from utils import login_required
-from sqlalchemy import exc
 
 bp = Blueprint('listing', __name__)
 
@@ -260,3 +259,46 @@ def get_listing_by_id():
     }
 
     return jsonify(listing_data), 200
+
+@bp.route('/update_listing', methods=['PUT'])
+@login_required
+def update_listing():
+    """
+    Allow the Seller to update their own listing (title, price, description, address).
+    """
+    data = request.get_json()
+    listing_id = data.get('listing_id')  # Listing to update
+    user_id = data.get('user_id')  # Seller's user ID
+    title = data.get('title')
+    price = data.get('price')
+    description = data.get('description')
+    address = data.get('address')
+
+    # Validate inputs
+    if not listing_id or not user_id or not title or not price or not address:
+        return jsonify({'error': 'listing_id, user_id, title, price, and address are required'}), 400
+
+    # Fetch the listing and the Seller
+    listing = Listing.query.get(listing_id)
+    user = User.query.get(user_id)
+
+    if not listing:
+        return jsonify({'error': 'Listing not found'}), 404
+
+    if not user or user.role.role_name != 'Seller':
+        return jsonify({'error': 'Invalid user or role'}), 403
+
+    # Ensure the user is the owner of the listing
+    if listing.seller_id != user.id:
+        return jsonify({'error': 'You can only update your own listings'}), 403
+
+    # Update the listing
+    listing.title = title
+    listing.price = price
+    listing.description = description
+    listing.address = address
+
+    # Commit the changes to the database
+    db.session.commit()
+
+    return jsonify({'message': 'Listing updated successfully', 'listing_id': listing.id}), 200
