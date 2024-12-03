@@ -1,9 +1,14 @@
 -- Create custom ENUM types
 -- CREATE TYPE listing_status AS ENUM ('Available', 'In Escrow', 'Sold');
--- CREATE TYPE offer_status AS ENUM ('Pending', 'Accepted', 'Rejected');
+CREATE TYPE offer_status AS ENUM ('Pending', 'Accepted', 'Rejected');
 -- CREATE TYPE document_type AS ENUM ('Disclosure', 'Contract', 'Inspection Report');
 -- CREATE TYPE escrow_status AS ENUM ('Open', 'Closed');
 -- CREATE TYPE payment_status AS ENUM ('Pending', 'Succeeded', 'Failed', 'Cancelled');
+-- Roles table
+CREATE TABLE Roles (
+    id SERIAL PRIMARY KEY,              -- Auto-incremented ID
+    role_name VARCHAR(50) UNIQUE NOT NULL -- Unique role name (e.g., "Buyer", "Seller")
+);
 
 -- Create Users table
 CREATE TABLE Users (
@@ -15,12 +20,6 @@ CREATE TABLE Users (
     task_progress JSONB DEFAULT '{}'::jsonb,
     role_id INT NOT NULL,                -- Foreign key to the Roles table (One role per user)
     FOREIGN KEY (role_id) REFERENCES Roles(id) ON DELETE CASCADE  -- Ensures referential integrity
-);
-
--- Roles table
-CREATE TABLE Roles (
-    id SERIAL PRIMARY KEY,              -- Auto-incremented ID
-    role_name VARCHAR(50) UNIQUE NOT NULL -- Unique role name (e.g., "Buyer", "Seller")
 );
 
 -- -- Create UserRoles table
@@ -47,7 +46,7 @@ CREATE TABLE Offers (
     listing_id INT REFERENCES Listings(id) ON DELETE CASCADE,
     buyer_id INT REFERENCES Users(id) ON DELETE SET NULL,
     offer_price NUMERIC(10, 2),
-    status offer_status DEFAULT 'Pending',
+    status VARCHAR(50) DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

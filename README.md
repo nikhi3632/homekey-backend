@@ -38,6 +38,7 @@ docker compose up
 To stop the application:
 ```bash
 docker compose down
+docker volume rm homekey-backend_postgres_data
 ```
 
 To view logs:
@@ -45,16 +46,8 @@ To view logs:
 docker compose logs
 ```
 
-To interact with postgresql:
+To get postgres_container_id and interact with postgresql:
 ```bash
+docker ps
 docker exec -it <postgres_container_id> psql -U postgres homekey
-```
-
-To insert roles in the psql shell run:
-```bash
-INSERT INTO roles (role_name) 
-VALUES
-    ('Seller'),
-    ('Buyer'),
-    ('FSH');
 ```

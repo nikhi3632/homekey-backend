@@ -1,7 +1,7 @@
 import base64
 from flask import Blueprint, request, jsonify
 from app.models import db, User, Listing, Escrow
-from utils import login_required
+from app.utils import login_required
 
 escrow_bp = Blueprint('escrow', __name__)
 

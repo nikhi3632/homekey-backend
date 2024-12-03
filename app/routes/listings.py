@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.models import db, User, Listing, Document 
-from utils import login_required
+from app.utils import login_required
 from app.routes.documents import format_document
 
 listings_bp = Blueprint('listings', __name__)
