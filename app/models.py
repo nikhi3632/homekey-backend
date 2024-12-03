@@ -110,3 +110,23 @@ class Document(db.Model):
         self.document_type = document_type
         self.file_name = file_name
         self.file_data = file_data
+
+class Escrow(db.Model):
+    __tablename__ = 'escrow'
+
+    id = db.Column(db.Integer, primary_key=True)  # Unique ID for the escrow record
+    listing_id = db.Column(db.Integer, db.ForeignKey('listings.id', ondelete='CASCADE'))  # Reference to the related listing
+    seller_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))  # Reference to the seller
+    escrow_number = db.Column(db.String(50), nullable=False, unique=True)  # Unique escrow number
+    status = db.Column(db.String(50), default='Open')  # Escrow status (Open, Closed, Cancelled)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))  # Timestamp when escrow was opened
+
+    # Relationships
+    listing = db.relationship('Listing', backref=db.backref('escrow', uselist=False), lazy=True)
+    seller = db.relationship('User', backref='escrows', lazy=True)
+
+    def __init__(self, listing_id, seller_id, escrow_number, status='Open'):
+        self.listing_id = listing_id
+        self.seller_id = seller_id
+        self.escrow_number = escrow_number
+        self.status = status

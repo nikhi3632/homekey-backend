@@ -62,17 +62,14 @@ CREATE TABLE Documents (
 );
 
 -- -- Create Escrow table
--- CREATE TABLE Escrow (
---     id SERIAL PRIMARY KEY,
---     listing_id INT REFERENCES Listings(id) ON DELETE CASCADE,
---     buyer_id INT REFERENCES Users(id) ON DELETE SET NULL,
---     fsh_id INT REFERENCES Users(id) ON DELETE SET NULL,
---     status escrow_status DEFAULT 'Open',
---     deposit_amount NUMERIC(10, 2),
---     stripe_payment_intent_id VARCHAR(255),
---     stripe_payment_status payment_status DEFAULT 'Pending',
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
+CREATE TABLE Escrow (
+    id SERIAL PRIMARY KEY,                     -- Unique ID for the escrow record
+    listing_id INT REFERENCES Listings(id) ON DELETE CASCADE, -- Reference to the related listing
+    seller_id INT REFERENCES Users(id) ON DELETE SET NULL,    -- Reference to the seller
+    escrow_number VARCHAR(50) NOT NULL,        -- Unique escrow number
+    status VARCHAR(50) DEFAULT 'Open',         -- Escrow status (Open, Closed, Cancelled)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Timestamp when escrow was opened
+);
 
 -- Create indexes for better query performance
 CREATE INDEX idx_user_email ON Users(email);
