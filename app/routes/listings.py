@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app.models import db, User, Listing, Document 
 from utils import login_required
+from app.routes.documents import format_document
 
 bp = Blueprint('listing', __name__)
 
@@ -194,7 +195,8 @@ def get_all_listings():
             'description': listing.description,
             'address': listing.address,
             'status': listing.status,
-            'created_at': listing.created_at
+            'created_at': listing.created_at,
+            'documents': [format_document(doc) for doc in listing.documents]
         }
         for listing in listings
     ]
@@ -230,7 +232,8 @@ def get_my_listings():
             'description': listing.description,
             'address': listing.address,
             'status': listing.status,
-            'created_at': listing.created_at
+            'created_at': listing.created_at,
+            'documents': [format_document(doc) for doc in listing.documents]
         }
         for listing in listings
     ]
@@ -261,7 +264,8 @@ def get_listing_by_id():
         'description': listing.description,
         'address': listing.address,
         'status': listing.status,
-        'created_at': listing.created_at
+        'created_at': listing.created_at,
+        'documents': [format_document(doc) for doc in listing.documents]
     }
 
     return jsonify(listing_data), 200
@@ -270,7 +274,7 @@ def get_listing_by_id():
 @login_required
 def update_listing():
     """
-    Allow the Seller to update their own listing (title, price, description, address).
+    Allow the Seller to update their own listing (title, price, description, address) or just documents.
     """
     data = request.get_json()
     listing_id = data.get('listing_id')  # Listing to update
@@ -279,10 +283,11 @@ def update_listing():
     price = data.get('price')
     description = data.get('description')
     address = data.get('address')
+    document_updates = data.get('documents')  # List of documents to update or add
 
-    # Validate inputs
-    if not listing_id or not user_id or not title or not price or not address:
-        return jsonify({'error': 'listing_id, user_id, title, price, and address are required'}), 400
+    # Validate required fields: listing_id and user_id
+    if not listing_id or not user_id:
+        return jsonify({'error': 'listing_id and user_id are required'}), 400
 
     # Fetch the listing and the Seller
     listing = Listing.query.get(listing_id)
@@ -298,16 +303,61 @@ def update_listing():
     if listing.seller_id != user.id:
         return jsonify({'error': 'You can only update your own listings'}), 403
 
-    # Update the listing
-    listing.title = title
-    listing.price = price
-    listing.description = description
-    listing.address = address
+    # Update the listing if fields are provided
+    if title:
+        listing.title = title
+    if price:
+        listing.price = price
+    if description:
+        listing.description = description
+    if address:
+        listing.address = address
 
-    # Commit the changes to the database
-    db.session.commit()
+    # Handle document updates (add, replace, or delete documents)
+    if document_updates:
+        for document in document_updates:
+            # Handle document deletion
+            if document.get('action') == 'delete':
+                doc_id = document.get('document_id')
+                document_to_delete = Document.query.get(doc_id)
+                if document_to_delete:
+                    db.session.delete(document_to_delete)
+                else:
+                    return jsonify({'error': f'Document with ID {doc_id} not found'}), 404
+            
+            # Handle document update or add
+            elif document.get('action') in ['update', 'add']:
+                # If it's an update or new document, handle file upload
+                file = request.files.get(f"document_{document.get('document_id')}")
+                if file:
+                    file_name = file.filename
+                    file_data = file.read()  # Read the file as binary
 
-    return jsonify({'message': 'Listing updated successfully', 'listing_id': listing.id}), 200
+                    # If updating an existing document
+                    if document.get('action') == 'update' and document.get('document_id'):
+                        doc_id = document.get('document_id')
+                        document_to_update = Document.query.get(doc_id)
+                        if document_to_update:
+                            document_to_update.file_name = file_name
+                            document_to_update.file_data = file_data
+                            db.session.commit()
+                        else:
+                            return jsonify({'error': f'Document with ID {doc_id} not found'}), 404
+                    # If it's a new document
+                    elif document.get('action') == 'add':
+                        new_document = Document(
+                            listing_id=listing.id,
+                            uploaded_by=user.id,
+                            document_type=document.get('document_type'),
+                            file_name=file_name,
+                            file_data=file_data
+                        )
+                        db.session.add(new_document)
+
+        db.session.commit()
+
+    return jsonify({'message': 'Listing and documents updated successfully', 'listing_id': listing.id}), 200
+
 
 @bp.route('/get_pending_listings', methods=['GET'])
 @login_required
@@ -338,7 +388,8 @@ def get_pending_listings():
             'description': listing.description,
             'address': listing.address,
             'seller_id': listing.seller_id,
-            'created_at': listing.created_at
+            'created_at': listing.created_at,
+            'documents': [format_document(doc) for doc in listing.documents]
         }
         for listing in pending_listings
     ]
