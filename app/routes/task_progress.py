@@ -3,9 +3,9 @@ from models import db, User
 from sqlalchemy.exc import SQLAlchemyError
 from tasks import TASK_SEQUENCES  # Import task sequences for role-based tasks
 
-bp = Blueprint('task_progress', __name__)
+task_progress_bp = Blueprint('task_progress', __name__)
 
-@bp.route('/complete_task', methods=['POST'])
+@task_progress_bp.route('/complete_task', methods=['POST'])
 def complete_task():
     data = request.get_json()
     user_id = data.get('user_id')  # User ID
@@ -42,7 +42,7 @@ def complete_task():
         db.session.rollback()  # Rollback in case of error
         return jsonify({'error': str(e)}), 500
 
-@bp.route('/get_task_progress', methods=['GET'])
+@task_progress_bp.route('/get_task_progress', methods=['GET'])
 def get_task_progress():
     user_id = request.args.get('user_id')  # Get user_id from the query parameter
 

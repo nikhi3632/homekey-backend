@@ -49,3 +49,12 @@ To interact with postgresql:
 ```bash
 docker exec -it <postgres_container_id> psql -U postgres homekey
 ```
+
+To insert roles in the psql shell run:
+```bash
+INSERT INTO roles (role_name) 
+VALUES
+    ('Seller'),
+    ('Buyer'),
+    ('FSH');
+```

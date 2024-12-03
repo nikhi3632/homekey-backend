@@ -3,9 +3,9 @@ from app.models import db, User, Listing, Document
 from utils import login_required
 from app.routes.documents import format_document
 
-bp = Blueprint('listing', __name__)
+listings_bp = Blueprint('listings', __name__)
 
-@bp.route('/notify_fsh', methods=['POST'])
+@listings_bp.route('/notify_fsh', methods=['POST'])
 @login_required
 def notify_fsh():
     """
@@ -44,7 +44,7 @@ def notify_fsh():
 
     return jsonify({'message': 'FSH notified of intent to sell successfully', 'document_id': new_document.id}), 201
 
-@bp.route('/prepare_home', methods=['POST'])
+@listings_bp.route('/prepare_home', methods=['POST'])
 @login_required
 def prepare_home():
     """
@@ -72,7 +72,7 @@ def prepare_home():
 
     return jsonify({'message': 'Home marked as photo-ready'}), 200
 
-@bp.route('/upload_photo', methods=['POST'])
+@listings_bp.route('/upload_photo', methods=['POST'])
 @login_required
 def upload_photo():
     """
@@ -116,7 +116,7 @@ def upload_photo():
 
     return jsonify({'message': 'Photo uploaded successfully', 'document_id': new_document.id}), 201
 
-@bp.route('/create_listing', methods=['POST'])
+@listings_bp.route('/create_listing', methods=['POST'])
 @login_required
 def create_listing():
     """
@@ -160,7 +160,7 @@ def create_listing():
 
     return jsonify({'message': 'Listing created and entered into FSH system', 'listing_id': new_listing.id}), 201
 
-@bp.route('/get_all_listings', methods=['GET'])
+@listings_bp.route('/get_all_listings', methods=['GET'])
 @login_required
 def get_all_listings():
     """
@@ -203,7 +203,7 @@ def get_all_listings():
 
     return jsonify(listings_data), 200
 
-@bp.route('/get_my_listings', methods=['GET'])
+@listings_bp.route('/get_my_listings', methods=['GET'])
 @login_required
 def get_my_listings():
     """
@@ -240,7 +240,7 @@ def get_my_listings():
 
     return jsonify(listings_data), 200
 
-@bp.route('/get_listing_by_id', methods=['GET'])
+@listings_bp.route('/get_listing_by_id', methods=['GET'])
 @login_required
 def get_listing_by_id():
     """
@@ -270,7 +270,7 @@ def get_listing_by_id():
 
     return jsonify(listing_data), 200
 
-@bp.route('/update_listing', methods=['PUT'])
+@listings_bp.route('/update_listing', methods=['PUT'])
 @login_required
 def update_listing():
     """
@@ -359,7 +359,7 @@ def update_listing():
     return jsonify({'message': 'Listing and documents updated successfully', 'listing_id': listing.id}), 200
 
 
-@bp.route('/get_pending_listings', methods=['GET'])
+@listings_bp.route('/get_pending_listings', methods=['GET'])
 @login_required
 def get_pending_listings():
     """
@@ -396,7 +396,7 @@ def get_pending_listings():
 
     return jsonify(listings_data), 200
 
-@bp.route('/approve_listing', methods=['POST'])
+@listings_bp.route('/approve_listing', methods=['POST'])
 @login_required
 def approve_listing():
     """

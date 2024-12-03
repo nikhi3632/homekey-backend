@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify, session
 from app.models import db, User, Role
-from utils import login_required
+from app.utils import login_required
 from sqlalchemy import exc
 
-bp = Blueprint('auth', __name__)
+auth_bp = Blueprint('auth', __name__)
 
 '''
 During registration, a user will provide only one role (Buyer, Seller, or FSH).
@@ -11,7 +11,7 @@ The email must be unique for each user. If the same person wants to register wit
 A user can have only one role at a time, and this role will be stored in the session.
 '''
 
-@bp.route('/register', methods=['POST'])
+@auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
 
@@ -52,7 +52,7 @@ def register():
         return jsonify({'error': str(e)}), 500
 
 # Login route
-@bp.route('/login', methods=['POST'])
+@auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
 
@@ -87,13 +87,13 @@ def login():
     }), 200
 
 # Logout Route
-@bp.route('/logout', methods=['POST'])
+@auth_bp.route('/logout', methods=['POST'])
 def logout():
     session.pop('user_id', None)
     session.pop('role', None)     # Remove role from session
     return jsonify({'message': 'Logged out successfully'}), 200
 
-@bp.route('/protected_route', methods=['GET'])
+@auth_bp.route('/protected_route', methods=['GET'])
 @login_required
 def protected_route():
     # This route is only accessible if the user is logged in

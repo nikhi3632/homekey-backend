@@ -3,9 +3,9 @@ from flask import Blueprint, request, jsonify
 from app.models import db, User, Listing, Escrow
 from utils import login_required
 
-bp = Blueprint('escrow', __name__)
+escrow_bp = Blueprint('escrow', __name__)
 
-@bp.route('/open_escrow', methods=['POST'])
+@escrow_bp.route('/open_escrow', methods=['POST'])
 @login_required
 def open_escrow():
     """

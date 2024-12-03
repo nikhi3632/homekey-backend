@@ -1,11 +1,10 @@
 from app import db
 from datetime import datetime, timezone
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import JSONB
 from flask_bcrypt import Bcrypt
 from app.routes.tasks import TASK_SEQUENCES
 
-db = SQLAlchemy()
+
 bcrypt = Bcrypt()
 
 class TestModel(db.Model):
@@ -16,17 +15,19 @@ class TestModel(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
 class Role(db.Model):
+    __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
     role_name = db.Column(db.String(50), unique=True)  # Role name (e.g., Seller, Buyer, FSH)
 
 class User(db.Model):
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
     email = db.Column(db.String(100), unique=True)  # Email must be unique
     password_hash = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     task_progress = db.Column(JSONB, default={})  # Task progress stored as JSON
-    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))  # Foreign key to Roles table
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))  # Foreign key to Roles table
     role = db.relationship('Role', backref='users', lazy=True)  # Relationship to Role
 
     def __init__(self, name, email, password_hash=None, role=None):
@@ -61,7 +62,7 @@ class Listing(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))  # Timestamp when the listing was created
     
     seller = db.relationship('User', backref='listings', lazy=True)  # Relationship to User (Seller)
-    documents = db.relationship('Document', backref='listing', lazy=True)  # Relationship to Documents
+    documents = db.relationship('Document', back_populates='listing', lazy=True)  # Relationship to Documents
 
     def __init__(self, seller_id, title, price, description, address, status='Pending Approval'):
         self.seller_id = seller_id
@@ -101,7 +102,7 @@ class Document(db.Model):
     file_data = db.Column(db.LargeBinary, nullable=False)  # Binary data of the file
     uploaded_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))  # Timestamp for when the document was uploaded
     
-    listing = db.relationship('Listing', backref='documents', lazy=True)  # Relationship to Listing
+    listing = db.relationship('Listing', back_populates='documents')  # Relationship to Listing
     uploader = db.relationship('User', backref='uploaded_documents', lazy=True)  # Relationship to User (Uploader)
 
     def __init__(self, listing_id, uploaded_by, document_type, file_name, file_data):

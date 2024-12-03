@@ -19,6 +19,18 @@ def create_app():
     Session(app)
     from app.route import main_bp
     app.register_blueprint(main_bp)
+    from app.routes.auth import auth_bp
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    from app.routes.documents import document_bp
+    app.register_blueprint(document_bp, url_prefix='/documents')
+    from app.routes.escrow import escrow_bp
+    app.register_blueprint(escrow_bp, url_prefix='/escrow')
+    from app.routes.listings import listings_bp
+    app.register_blueprint(listings_bp, url_prefix='/listings')
+    from app.routes.offers import offers_bp
+    app.register_blueprint(offers_bp, url_prefix='/offers')
+    from app.routes.task_progress import task_progress_bp
+    app.register_blueprint(task_progress_bp, url_prefix='/task_progress')
     
     # Import models to ensure they are registered with SQLAlchemy
     from app import models

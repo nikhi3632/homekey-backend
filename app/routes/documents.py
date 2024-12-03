@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify
 from app.models import db, User, Listing, Document 
 from utils import login_required
 
-bp = Blueprint('documents', __name__)
+document_bp = Blueprint('documents', __name__)
 
 def format_document(document):
     """
