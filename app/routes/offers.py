@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.models import db, User, Listing, Offer
-from utils import login_required
+from app.utils import login_required
 
 # Create a Blueprint for offers
 offers_bp = Blueprint('offers', __name__)

@@ -1,9 +1,9 @@
 import base64
 from flask import Blueprint, request, jsonify
 from app.models import db, User, Listing, Document 
-from utils import login_required
+from app.utils import login_required
 
-document_bp = Blueprint('documents', __name__)
+documents_bp = Blueprint('documents', __name__)
 
 def format_document(document):
     """
@@ -21,7 +21,7 @@ def format_document(document):
         'file_content': file_content_base64  # Include Base64 encoded file content
     }
 
-@bp.route('/gather_disclosure_documents', methods=['POST'])
+@documents_bp.route('/gather_disclosure_documents', methods=['POST'])
 @login_required
 def gather_disclosure_documents():
     """

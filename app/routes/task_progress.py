@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
-from models import db, User
+from app.models import db, User
 from sqlalchemy.exc import SQLAlchemyError
-from tasks import TASK_SEQUENCES  # Import task sequences for role-based tasks
+from app.routes.tasks import TASK_SEQUENCES  # Import task sequences for role-based tasks
 
 task_progress_bp = Blueprint('task_progress', __name__)
 
