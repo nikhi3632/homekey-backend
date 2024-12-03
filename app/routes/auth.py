@@ -46,7 +46,7 @@ def register():
     try:
         db.session.add(new_user)
         db.session.commit()
-        return jsonify({'message': 'User created successfully'}), 201
+        return jsonify({'message': 'User created successfully', 'user_id': new_user.id, 'role': role_name}), 201
     except exc.SQLAlchemyError as e:
         db.session.rollback()  # Rollback in case of error
         return jsonify({'error': str(e)}), 500
