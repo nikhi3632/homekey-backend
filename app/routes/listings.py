@@ -70,6 +70,7 @@ def prepare_home():
     # Mark the property as photo-ready
     task_progress['prepare_home_for_listing'] = True
     user.task_progress['Seller'] = task_progress
+    flag_modified(user, 'task_progress')
     db.session.commit()
 
     return jsonify({'message': 'Home marked as photo-ready'}), 200
@@ -114,6 +115,7 @@ def upload_photo():
     # Update task progress
     task_progress['provide_photo_for_listing'] = True
     user.task_progress['Seller'] = task_progress
+    flag_modified(user, 'task_progress')
     db.session.commit()
 
     return jsonify({'message': 'Photo uploaded successfully', 'document_id': new_document.id}), 201
@@ -158,6 +160,7 @@ def create_listing():
     # Update task progress
     task_progress['enter_sale_listing_in_fsh'] = True
     user.task_progress['Seller'] = task_progress
+    flag_modified(user, 'task_progress')
     db.session.commit()
 
     return jsonify({'message': 'Listing created and entered into FSH system', 'listing_id': new_listing.id}), 201
@@ -435,6 +438,7 @@ def approve_listing():
     fsh_agent.task_progress['FSH'] = task_progress
 
     # Save changes to the database
+    flag_modified(fsh_agent, 'task_progress')
     db.session.commit()
 
     return jsonify({'message': 'Listing approved successfully', 'listing_id': listing.id}), 200
