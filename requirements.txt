@@ -12,3 +12,5 @@ boto3
 requests
 Flask-Session
 gunicorn
+python-dotenv
+sqlalchemy-orm

@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from app.models import db, User, Listing, Document 
 from app.utils import login_required
 from app.routes.documents import format_document
+from sqlalchemy.orm.attributes import flag_modified
 
 listings_bp = Blueprint('listings', __name__)
 
@@ -40,6 +41,7 @@ def notify_fsh():
     task_progress = user.task_progress.get('Seller', {})
     task_progress['notify_fsh_intent_to_sell'] = True
     user.task_progress['Seller'] = task_progress
+    flag_modified(user, 'task_progress')
     db.session.commit()
 
     return jsonify({'message': 'FSH notified of intent to sell successfully', 'document_id': new_document.id}), 201
