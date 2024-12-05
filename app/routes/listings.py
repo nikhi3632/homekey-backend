@@ -161,7 +161,7 @@ def create_listing():
     return jsonify({'message': 'Listing created and entered into FSH system', 'listing_id': new_listing.id}), 201
 
 @listings_bp.route('/get_all_listings', methods=['GET'])
-@login_required
+#@login_required
 def get_all_listings():
     """
     Fetch all listings for Buyers and FSH agents.
@@ -169,7 +169,7 @@ def get_all_listings():
     - FSH agents can see all listings.
     """
     user_id = request.args.get('user_id')
-
+    # return  jsonify(user_id)
     # Fetch the user
     user = User.query.get(user_id)
     if not user:
@@ -196,7 +196,10 @@ def get_all_listings():
             'address': listing.address,
             'status': listing.status,
             'created_at': listing.created_at,
-            'documents': [format_document(doc) for doc in listing.documents]
+            'documents': [format_document(doc) for doc in listing.documents],
+            'bedrooms': listing.bedrooms,
+            'bathrooms': listing.bathrooms,
+            'squarefootage': listing.squarefootage
         }
         for listing in listings
     ]

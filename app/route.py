@@ -28,7 +28,7 @@ def test_db():
             "data": {
                 "id": result.id,
                 "name": result.name,
-                "created_at": result.created_at.isoformat()
+                "created_at": result.created_at.isoformat(),
             }
         })
     except Exception as e:
