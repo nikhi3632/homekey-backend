@@ -63,9 +63,9 @@ class Listing(db.Model):
     
     seller = db.relationship('User', backref='listings', lazy=True)  # Relationship to User (Seller)
     documents = db.relationship('Document', back_populates='listing', lazy=True)  # Relationship to Documents
-    bedrooms = db.Column(db.Integer, nullable=False)
-    bathrooms = db.Column(db.Integer, nullable=False)
-    squarefootage = db.Column(db.Integer, nullable=False)
+    bedrooms = db.Column(db.Integer, nullable=True)
+    bathrooms = db.Column(db.Integer, nullable=True)
+    squarefootage = db.Column(db.Integer, nullable=True)
 
     def __init__(self, seller_id, title, price, description, address, status='Pending Approval'):
         self.seller_id = seller_id
