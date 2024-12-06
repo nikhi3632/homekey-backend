@@ -23,7 +23,7 @@ def format_document(document):
     }
 
 @documents_bp.route('/gather_disclosure_documents', methods=['POST'])
-@login_required
+#@login_required
 def gather_disclosure_documents():
     """
     FSH agent uploads disclosure documents for a listing.

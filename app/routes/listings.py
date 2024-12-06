@@ -7,7 +7,7 @@ from sqlalchemy.orm.attributes import flag_modified
 listings_bp = Blueprint('listings', __name__)
 
 @listings_bp.route('/notify_fsh', methods=['POST'])
-@login_required
+#@login_required
 def notify_fsh():
     """
     Upload a notification document for the Seller notifying FSH of intent to sell.
@@ -47,7 +47,7 @@ def notify_fsh():
     return jsonify({'message': 'FSH notified of intent to sell successfully', 'document_id': new_document.id}), 201
 
 @listings_bp.route('/prepare_home', methods=['POST'])
-@login_required
+#@login_required
 def prepare_home():
     """
     Mark the home as photo-ready for the listing.
@@ -76,7 +76,7 @@ def prepare_home():
     return jsonify({'message': 'Home marked as photo-ready'}), 200
 
 @listings_bp.route('/upload_photo', methods=['POST'])
-@login_required
+#@login_required
 def upload_photo():
     """
     Upload a single photo for the listing.
@@ -121,7 +121,7 @@ def upload_photo():
     return jsonify({'message': 'Photo uploaded successfully', 'document_id': new_document.id}), 201
 
 @listings_bp.route('/create_listing', methods=['POST'])
-@login_required
+#@login_required
 def create_listing():
     """
     Finalize the listing and enter it into the FSH website.
@@ -166,7 +166,7 @@ def create_listing():
     return jsonify({'message': 'Listing created and entered into FSH system', 'listing_id': new_listing.id}), 201
 
 @listings_bp.route('/get_all_listings', methods=['GET'])
-#@login_required
+##@login_required
 def get_all_listings():
     """
     Fetch all listings for Buyers and FSH agents.
@@ -212,7 +212,7 @@ def get_all_listings():
     return jsonify(listings_data), 200
 
 @listings_bp.route('/get_my_listings', methods=['GET'])
-@login_required
+#@login_required
 def get_my_listings():
     """
     Fetch listings for the Seller. Only shows listings posted by that Seller.
@@ -249,7 +249,7 @@ def get_my_listings():
     return jsonify(listings_data), 200
 
 @listings_bp.route('/get_listing_by_id', methods=['GET'])
-@login_required
+#@login_required
 def get_listing_by_id():
     """
     Fetch details of a specific listing by listing_id.
@@ -279,7 +279,7 @@ def get_listing_by_id():
     return jsonify(listing_data), 200
 
 @listings_bp.route('/update_listing', methods=['PUT'])
-@login_required
+#@login_required
 def update_listing():
     """
     Allow the Seller to update their own listing (title, price, description, address) or just documents.
@@ -368,7 +368,7 @@ def update_listing():
 
 
 @listings_bp.route('/get_pending_listings', methods=['GET'])
-@login_required
+#@login_required
 def get_pending_listings():
     """
     Fetch all listings with 'Pending Approval' status for FSH agent review.
@@ -405,7 +405,7 @@ def get_pending_listings():
     return jsonify(listings_data), 200
 
 @listings_bp.route('/approve_listing', methods=['POST'])
-@login_required
+#@login_required
 def approve_listing():
     """
     Approve a listing and update FSH agent's task progress.

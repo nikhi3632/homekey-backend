@@ -7,7 +7,7 @@ offers_bp = Blueprint('offers', __name__)
 
 # POST /offers/
 @offers_bp.route('/create_offer/', methods=['POST'])
-@login_required
+#@login_required
 def create_offer():
     listing_id = request.json.get('listing_id')
     buyer_id = request.json.get('buyer_id')
@@ -24,7 +24,7 @@ def create_offer():
 
 # GET /offers/{listing_id}
 @offers_bp.route('/get_offers_by_listing', methods=['GET'])
-@login_required
+#@login_required
 def get_offers_by_listing():
     listing_id = request.args.get('listing_id')
     if not listing_id:
@@ -36,7 +36,7 @@ def get_offers_by_listing():
 
 # GET /offers/{buyer_id}
 @offers_bp.route('/get_my_offers', methods=['GET'])
-@login_required
+#@login_required
 def get_my_offers():
     user_id = request.args.get('user_id')
 
@@ -69,7 +69,7 @@ def get_my_offers():
 
 # PUT /offers/{id}/(accept, reject)
 @offers_bp.route('/decide_offer', methods=['PUT'])
-@login_required
+#@login_required
 def decide_offer():
     offer_id = request.json.get('offer_id')
     action = request.json.get('action')

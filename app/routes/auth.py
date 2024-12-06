@@ -94,7 +94,7 @@ def logout():
     return jsonify({'message': 'Logged out successfully'}), 200
 
 @auth_bp.route('/protected_route', methods=['GET'])
-@login_required
+#@login_required
 def protected_route():
     # This route is only accessible if the user is logged in
     return jsonify({'message': 'This is a protected route.'})
