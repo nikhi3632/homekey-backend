@@ -5,102 +5,177 @@ from app.utils import login_required
 # Create a Blueprint for offers
 offers_bp = Blueprint('offers', __name__)
 
-# POST /offers/
-@offers_bp.route('/create_offer/', methods=['POST'])
-#@login_required
-def create_offer():
-    listing_id = request.json.get('listing_id')
-    buyer_id = request.json.get('buyer_id')
-    offer_price = request.json.get('offer_price')
+@offers_bp.route('/get_offers_for_listing', methods=['GET'])
+# @login_required
+def get_offers_for_listing():
+    """
+    Fetch all offers for a seller's listing.
+    """
+    user_id = request.args.get('user_id')  # Seller's user ID
+    listing_id = request.args.get('listing_id')  # Listing ID to fetch offers for
 
-    if not (listing_id and buyer_id and offer_price):
-        return jsonify({'error': 'All fields are required'}), 400
+    # Fetch the seller
+    seller = User.query.get(user_id)
+    if not seller or seller.role.role_name != 'Seller':
+        return jsonify({'error': 'Invalid user or role'}), 403
 
-    new_offer = Offer(listing_id=listing_id, buyer_id=buyer_id, offer_price=offer_price)
-    db.session.add(new_offer)
-    db.session.commit()
+    # Fetch the listing
+    listing = Listing.query.get(listing_id)
+    if not listing or listing.seller_id != seller.id:
+        return jsonify({'error': 'Listing not found or you are not the seller of this listing'}), 404
 
-    return jsonify({'message': 'Offer created', 'offer_id': new_offer.id}), 201
-
-# GET /offers/{listing_id}
-@offers_bp.route('/get_offers_by_listing', methods=['GET'])
-#@login_required
-def get_offers_by_listing():
-    listing_id = request.args.get('listing_id')
-    if not listing_id:
-        return jsonify({'error': 'listing_id is required'}), 400
+    # Fetch all offers for the listing
     offers = Offer.query.filter_by(listing_id=listing_id).all()
-    if not offers:
-        return jsonify({'error': 'No offers found for this listing'}), 404
-    return jsonify([offer.to_dict() for offer in offers])
-
-# GET /offers/{buyer_id}
-@offers_bp.route('/get_my_offers', methods=['GET'])
-#@login_required
-def get_my_offers():
-    user_id = request.args.get('user_id')
-
-    # Fetch the user (Buyer)
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-
-    # Ensure the user is a Buyer
-    if user.role.role_name != 'Buyer':
-        return jsonify({'error': 'Only Buyers can view their own offers'}), 403
-
-    # Fetch offers where the buyer_id matches the user's ID
-    offers = Offer.query.filter_by(buyer_id=user_id).all()
 
     # Prepare response data
     offers_data = [
         {
-            'id': offer.id,
-            'listing_id': offer.listing_id,
+            'offer_id': offer.id,
             'buyer_id': offer.buyer_id,
             'offer_price': offer.offer_price,
+            'offer_message': offer.offer_message,
             'status': offer.status,
             'created_at': offer.created_at
         }
         for offer in offers
     ]
 
-    return jsonify(offers_data), 200
+    return jsonify({'offers': offers_data}), 200
 
-# PUT /offers/{id}/(accept, reject)
-@offers_bp.route('/decide_offer', methods=['PUT'])
-#@login_required
-def decide_offer():
-    offer_id = request.json.get('offer_id')
-    action = request.json.get('action')
-    user_id = request.json.get('user_id')
+@offers_bp.route('/get_my_offers', methods=['GET'])
+# @login_required
+def get_my_offers():
+    """
+    Fetch all offers made by a specific buyer.
+    """
+    user_id = request.args.get('user_id')  # Buyer's user ID
 
-    if not (offer_id and action and user_id):
-        return jsonify({'error': 'offer_id, action, and user_id are required'}), 400
+    # Fetch the buyer
+    buyer = User.query.get(user_id)
+    if not buyer or buyer.role.role_name != 'Buyer':
+        return jsonify({'error': 'Invalid user or role'}), 403
 
-    # Fetch the offer
-    offer = Offer.query.get(offer_id)
-    if not offer:
-        return jsonify({'error': 'Offer not found'}), 404
+    # Fetch all offers made by the buyer
+    offers = Offer.query.filter_by(buyer_id=buyer.id).all()
 
-    listing = Listing.query.get(offer.listing_id)
+    # Prepare response data
+    offers_data = [
+        {
+            'offer_id': offer.id,
+            'listing_id': offer.listing_id,
+            'offer_price': offer.offer_price,
+            'offer_message': offer.offer_message,
+            'status': offer.status,
+            'created_at': offer.created_at
+        }
+        for offer in offers
+    ]
+
+    return jsonify({'offers': offers_data}), 200
+
+@offers_bp.route('/submit_offer', methods=['POST'])
+# @login_required
+def submit_offer():
+    """
+    Buyer submits an offer for a listing.
+    """
+    data = request.get_json()
+    user_id = data.get('user_id')  # Buyer ID
+    listing_id = data.get('listing_id')  # Listing ID
+    offer_price = data.get('offer_price')  # Offer price
+    offer_message = data.get('offer_message')  # Additional message from the buyer
+
+    # Validate inputs
+    if not (user_id and listing_id and offer_price):
+        return jsonify({'error': 'user_id, listing_id, and offer_price are required'}), 400
+
+    # Fetch the buyer and listing
+    buyer = User.query.get(user_id)
+    listing = Listing.query.get(listing_id)
+
+    if not buyer or buyer.role.role_name != 'Buyer':
+        return jsonify({'error': 'Invalid buyer or user role'}), 403
+
     if not listing:
         return jsonify({'error': 'Listing not found'}), 404
 
-    # Ensure the user is the seller of the listing
-    if listing.seller_id != user_id:
-        return jsonify({'error': 'You are not the seller of this listing'}), 403
+    # Ensure the offer price is greater than 0
+    if offer_price <= 0:
+        return jsonify({'error': 'Offer price must be greater than 0'}), 400
 
-    if action == 'accept':
-        # Update the listing's status to 'Sold' and the offer's status to 'Accepted'
-        listing = Listing.query.get(offer.listing_id)
-        listing.status = 'Sold'
-        offer.status = 'Accepted'
-    elif action == 'reject':
-        # Update the offer's status to 'Rejected'
-        offer.status = 'Rejected'    
-    else:
-        return jsonify({'error': 'Invalid action'}), 400    
-
+    # Create a new offer
+    new_offer = Offer(
+        listing_id=listing.id,
+        buyer_id=buyer.id,
+        offer_price=offer_price,
+        offer_message=offer_message,
+        status='Pending'  # Default status for new offers
+    )
+    
+    db.session.add(new_offer)
     db.session.commit()
-    return jsonify({'message': 'Offer updated'}), 200
+
+    return jsonify({'message': 'Offer submitted successfully', 'offer_id': new_offer.id}), 201
+
+@offers_bp.route('/respond_offer', methods=['POST'])
+# @login_required
+def respond_offer():
+    """
+    Seller accepts or rejects an offer, and the status of other offers on the listing is updated accordingly.
+    If an offer is accepted, the listing's status is updated to "Closed".
+    """
+    data = request.get_json()
+    user_id = data.get('user_id')  # Seller's user ID
+    offer_id = data.get('offer_id')  # Offer ID to respond to
+    action = data.get('action')  # Action: "accept" or "reject"
+
+    # Validate inputs
+    if not (user_id and offer_id and action):
+        return jsonify({'error': 'user_id, offer_id, and action (accept/reject) are required'}), 400
+
+    # Fetch the seller and offer
+    seller = User.query.get(user_id)
+    offer = Offer.query.get(offer_id)
+
+    if not seller or seller.role.role_name != 'Seller':
+        return jsonify({'error': 'Invalid seller or user role'}), 403
+
+    if not offer:
+        return jsonify({'error': 'Offer not found'}), 404
+
+    listing = offer.listing
+
+    # Ensure the seller owns the listing
+    if listing.seller_id != seller.id:
+        return jsonify({'error': 'You can only respond to offers for your own listings'}), 403
+
+    # Handle accepting or rejecting the offer
+    if action == 'accept':
+        # Update the accepted offer status
+        offer.status = 'Accepted'
+
+        # Update the listing status to "Closed"
+        listing.status = 'Closed'
+
+        # Set all other offers for this listing to inactive/rejected
+        other_offers = Offer.query.filter(Offer.listing_id == listing.id, Offer.id != offer.id).all()
+        for other_offer in other_offers:
+            other_offer.status = 'Inactive'  # Mark other offers as inactive
+
+        db.session.commit()
+
+        return jsonify({
+            'message': 'Offer accepted successfully',
+            'offer_id': offer.id,
+            'listing_status': listing.status
+        }), 200
+
+    elif action == 'reject':
+        # Reject the offer
+        offer.status = 'Rejected'
+        db.session.commit()
+
+        return jsonify({'message': 'Offer rejected successfully', 'offer_id': offer.id}), 200
+
+    else:
+        return jsonify({'error': 'Invalid action. Use "accept" or "reject".'}), 400

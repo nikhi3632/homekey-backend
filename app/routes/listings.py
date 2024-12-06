@@ -173,7 +173,7 @@ def create_listing():
     return jsonify({'message': 'Listing created and entered into FSH system', 'listing_id': new_listing.id}), 201
 
 @listings_bp.route('/get_all_listings', methods=['GET'])
-##@login_required
+#@login_required
 def get_all_listings():
     """
     Fetch all listings for Buyers and FSH agents.

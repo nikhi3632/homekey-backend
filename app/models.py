@@ -77,21 +77,23 @@ class Listing(db.Model):
 
 class Offer(db.Model):
     __tablename__ = 'offers'
-    
-    id = db.Column(db.Integer, primary_key=True)  # Unique ID for the offer
-    listing_id = db.Column(db.Integer, db.ForeignKey('listings.id', ondelete='CASCADE'))  # Foreign key to Listings table
-    buyer_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))  # Foreign key to the Users table
-    offer_price = db.Column(db.Numeric(10, 2), nullable=False)  # Offered price
-    status = db.Column(db.String(50), default='Pending')  # Status of the offer
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))  # Timestamp when the offer was created
-    
-    listing = db.relationship('Listing', backref='offers', lazy=True)  # Relationship to Listing
-    buyer = db.relationship('User', backref='offers', lazy=True)  # Relationship to User (Buyer)
 
-    def __init__(self, listing_id, buyer_id, offer_price, status='Pending'):
+    id = db.Column(db.Integer, primary_key=True)
+    listing_id = db.Column(db.Integer, db.ForeignKey('listings.id', ondelete='CASCADE'))  # Listing this offer is for
+    buyer_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))  # Buyer who submitted the offer
+    offer_price = db.Column(db.Numeric(10, 2), nullable=False)  # Price offered by the buyer
+    offer_message = db.Column(db.Text)  # Optional message from the buyer
+    status = db.Column(db.String(50), default='Pending')  # Offer status: Pending, Accepted, Rejected, Inactive
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)  # Time when the offer was created
+
+    listing = db.relationship('Listing', backref=db.backref('offers', lazy=True))
+    buyer = db.relationship('User', backref=db.backref('offers', lazy=True))
+
+    def __init__(self, listing_id, buyer_id, offer_price, offer_message=None, status='Pending'):
         self.listing_id = listing_id
         self.buyer_id = buyer_id
         self.offer_price = offer_price
+        self.offer_message = offer_message
         self.status = status
 
 class Document(db.Model):

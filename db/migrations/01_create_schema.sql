@@ -1,9 +1,3 @@
--- Create custom ENUM types
--- CREATE TYPE listing_status AS ENUM ('Available', 'In Escrow', 'Sold');
-CREATE TYPE offer_status AS ENUM ('Pending', 'Accepted', 'Rejected');
--- CREATE TYPE document_type AS ENUM ('Disclosure', 'Contract', 'Inspection Report');
--- CREATE TYPE escrow_status AS ENUM ('Open', 'Closed');
--- CREATE TYPE payment_status AS ENUM ('Pending', 'Succeeded', 'Failed', 'Cancelled');
 -- Roles table
 CREATE TABLE Roles (
     id SERIAL PRIMARY KEY,              -- Auto-incremented ID
@@ -22,13 +16,6 @@ CREATE TABLE Users (
     FOREIGN KEY (role_id) REFERENCES Roles(id) ON DELETE CASCADE  -- Ensures referential integrity
 );
 
--- -- Create UserRoles table
--- CREATE TABLE UserRoles (
---     user_id INT REFERENCES Users(id) ON DELETE CASCADE,
---     role_id INT REFERENCES Roles(id) ON DELETE CASCADE,
---     PRIMARY KEY (user_id, role_id)
--- );
-
 CREATE TABLE Listings (
     id SERIAL PRIMARY KEY,                     -- Unique ID for the listing
     seller_id INT REFERENCES Users(id) ON DELETE SET NULL,  -- Reference to the seller's user ID
@@ -46,12 +33,14 @@ CREATE TABLE Listings (
 -- Create Offers table
 CREATE TABLE Offers (
     id SERIAL PRIMARY KEY,
-    listing_id INT REFERENCES Listings(id) ON DELETE CASCADE,
-    buyer_id INT REFERENCES Users(id) ON DELETE SET NULL,
-    offer_price NUMERIC(10, 2),
-    status VARCHAR(50) DEFAULT 'Pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    listing_id INT REFERENCES Listings(id) ON DELETE CASCADE,  -- Reference to the listing
+    buyer_id INT REFERENCES Users(id) ON DELETE SET NULL,  -- Reference to the buyer
+    offer_price NUMERIC(10, 2) NOT NULL,  -- Offered price
+    offer_message TEXT,  -- Message from the buyer
+    status VARCHAR(50) DEFAULT 'Pending',  -- Offer status (Pending, Accepted, Rejected, Inactive)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Timestamp for when the offer was created
 );
+
 
 CREATE TABLE Documents (
     id SERIAL PRIMARY KEY,                     -- Unique ID for the document
@@ -76,5 +65,5 @@ CREATE TABLE Escrow (
 -- Create indexes for better query performance
 CREATE INDEX idx_user_email ON Users(email);
 CREATE INDEX idx_listing_status ON Listings(status);
--- CREATE INDEX idx_offer_status ON Offers(status);
--- CREATE INDEX idx_escrow_status ON Escrow(status);
+CREATE INDEX idx_listing_id ON Offers(listing_id);
+CREATE INDEX idx_buyer_id ON Offers(buyer_id);
