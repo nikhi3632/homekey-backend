@@ -38,9 +38,9 @@ CREATE TABLE Listings (
     address TEXT,                             -- Address of the property
     status VARCHAR(50) DEFAULT 'Pending Approval', -- Status of the listing (Pending Approval, Approved, etc.)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Timestamp when the listing was created
-    bedrooms INT NOT NULL,
-    bathrooms INT NOT NULL,
-    squarefootage INT NOT NULL,
+    bedrooms INT,
+    bathrooms INT,
+    squarefootage INT,
 );
 
 -- Create Offers table
