@@ -157,6 +157,13 @@ def create_listing():
     db.session.add(new_listing)
     db.session.commit()
 
+    # Associate documents with the newly created listing
+    documents = Document.query.filter_by(uploaded_by=user.id, listing_id=None).all()
+    for doc in documents:
+        doc.listing_id = new_listing.id
+        db.session.add(doc)  # Mark the document as updated
+    db.session.commit()  # Commit changes to both listing and documents
+
     # Update task progress
     task_progress['enter_sale_listing_in_fsh'] = True
     user.task_progress['Seller'] = task_progress
