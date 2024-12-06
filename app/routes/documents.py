@@ -2,6 +2,7 @@ import base64
 from flask import Blueprint, request, jsonify
 from app.models import db, User, Listing, Document 
 from app.utils import login_required
+from sqlalchemy.orm.attributes import flag_modified
 
 documents_bp = Blueprint('documents', __name__)
 
@@ -65,6 +66,7 @@ def gather_disclosure_documents():
     user.task_progress['FSH'] = task_progress
 
     # Save changes to the database
+    flag_modified(user, 'task_progress')
     db.session.commit()
 
     # Return success response

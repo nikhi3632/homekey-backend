@@ -2,6 +2,7 @@ import base64
 from flask import Blueprint, request, jsonify
 from app.models import db, User, Listing, Escrow
 from app.utils import login_required
+from sqlalchemy.orm.attributes import flag_modified
 
 escrow_bp = Blueprint('escrow', __name__)
 
@@ -51,6 +52,7 @@ def open_escrow():
     user.task_progress['FSH'] = task_progress
 
     # Save changes to the database
+    flag_modified(user, 'task_progress')
     db.session.commit()
 
     # Return success response
