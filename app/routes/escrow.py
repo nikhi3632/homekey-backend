@@ -6,7 +6,7 @@ from app.utils import login_required
 escrow_bp = Blueprint('escrow', __name__)
 
 @escrow_bp.route('/open_escrow', methods=['POST'])
-@login_required
+#@login_required
 def open_escrow():
     """
     FSH agent opens escrow for a listing and provides the escrow number.
